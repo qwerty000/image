@@ -456,46 +456,6 @@ function new_fs
 	fi
 	fi
 }
-function tc_header1
-{
-uudecode <<- -EOF-
-begin 644 /dev/stdout
-MQFH8!/F>*F%)Q@MT2/F9\`_-+*,X50BN4(_\`3KKQ-/@0/=CJ_\`''L8IA=8UBT
-MW=2?2.@WTJ13:%WOMV/"-C2-D&Q'BB-\`3N+=9)T"[.7%V3JGM.#H!HC:&;G&
-M?]Z29DWA\$@KI.B@U2\D@:C0U4YMF5L\`Z<(-.]Q:\$AAS\`RQ!J#ENPOM:P*TZF
-M+_R?&+-8Y6LMF<\`]9E]>6!.J4:'4#7\$;@9Z1@1=K\$\`-]Y4BX\`0F"80+P&4,&
-M9A+#'Z9/W#D&Y8R)O#KP>"!3,V5]N\`V*.]0QV).T/9>;7F[XG'QT[T&QJ\\\$-
-M6L,(\`#ZU=_R4*M,9?+!VR&]--J,88RJ&!KWN[J"4B\]-A75':<VIB!]8P!!S
-M,-H_\`(\`9%T!\`YT\`C6I5#(Q,K:2TH\$U[8L3+8B/L+Y2MN,6MPPENJP^)#-RCP
-M@_J6KGFIE#JH\$LUD_#8^;WJ"F%N!;X>:_%;5^1<C'M+C-=,^K\`Z#4OF73[6O
-M%XSIRM/C![1N,8G8=57T4PB]'<Z6+/C<\`U@U91;]55D1!#PTGR.U:\`-U_F[]
-M3'>S_/#'<8.AILDD@IZGP<)CG3:RAH*PTV=P+4RJH1\`=&2&I[%"8_\`(DU!K4
-M!?.GS4]@_2A)\`R?\>G)\$O8#T)Y3\$YH3]KTC@\$CZUZ6M(=-<"!'"(>:VV"5QI
-1GUM:U=BA;3(S(;I:<>2U%>?T
-\`
-end
--EOF-
-}
-function tc_header2
-{
-uudecode -p <<- -EOF-
-begin 644 /dev/stdout
-MQFH8!/F>*F%)Q@MT2/F9\`_-+*,X50BN4(_\`3KKQ-/@0/=CJ_\`''L8IA=8UBT
-MW=2?2.@WTJ13:%WOMV/"-C2-D&Q'BB-\`3N+=9)T"[.7%V3JGM.#H!HC:&;G&
-M?]Z29DWA\$@KI.B@U2\D@:C0U4YMF5L\`Z<(-.]Q:\$AAS\`RQ!J#ENPOM:P*TZF
-M+_R?&+-8Y6LMF<\`]9E]>6!.J4:'4#7\$;@9Z1@1=K\$\`-]Y4BX\`0F"80+P&4,&
-M9A+#'Z9/W#D&Y8R)O#KP>"!3,V5]N\`V*.]0QV).T/9>;7F[XG'QT[T&QJ\\\$-
-M6L,(\`#ZU=_R4*M,9?+!VR&]--J,88RJ&!KWN[J"4B\]-A75':<VIB!]8P!!S
-M,-H_\`(\`9%T!\`YT\`C6I5#(Q,K:2TH\$U[8L3+8B/L+Y2MN,6MPPENJP^)#-RCP
-M@_J6KGFIE#JH\$LUD_#8^;WJ"F%N!;X>:_%;5^1<C'M+C-=,^K\`Z#4OF73[6O
-M%XSIRM/C![1N,8G8=57T4PB]'<Z6+/C<\`U@U91;]55D1!#PTGR.U:\`-U_F[]
-M3'>S_/#'<8.AILDD@IZGP<)CG3:RAH*PTV=P+4RJH1\`=&2&I[%"8_\`(DU!K4
-M!?.GS4]@_2A)\`R?\>G)\$O8#T)Y3\$YH3]KTC@\$CZUZ6M(=-<"!'"(>:VV"5QI
-1GUM:U=BA;3(S(;I:<>2U%>?T
-\`
-end
--EOF-
-}
 
 #       -------------------------------------------------------------------
 #       Program starts here
