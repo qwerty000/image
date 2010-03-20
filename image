@@ -29,17 +29,17 @@ function helptext
         local tab=$(echo -en "\t\t")
 if [ $uname = "Darwin" ]; then
         cat <<- -EOF-
-${PROGNAME} ver. ${VERSION}
-This is a program to create custom image files.
-Options:
--h, --help      Display this help message and exit.
--i  initialize	install an fs [ ext2 | ext3 | ntfs ]
--n  name	name of the image
--s  size	size of the image
--S  sparse	size of the sparse image
--b  blocksize	default is 4096
+	${PROGNAME} ver. ${VERSION}
+	This is a program to create custom image files.
+	Options:
+	-h, --help      Display this help message and exit.
+	-i  initialize	install an fs [ ext2 | ext3 | ntfs ]
+	-n  name	name of the image
+	-s  size	size of the image
+	-S  sparse	size of the sparse image
+	-b  blocksize	default is 4096
 
--EOF-
+	-EOF-
 else
 	if [ $uname = "NetBSD" ]; then
 	cat <<- -EOF-
@@ -54,67 +54,67 @@ else
 	-b  blocksize   default is 4096
 
 	-EOF-
-	else
-		if [ $uname = "CYGWIN_NT-5.1" ]; then
-		cat <<- -EOF-
-		${PROGNAME} ver. ${VERSION}
-		This is a program to create custom image files.
-		Options:
-		-h, --help      Display this help message and exit.
-		-i  initialize  install an fs [ dos | ext2 | ext3 | swap | hfs | ntfs ]
-		-n  name        name of the image
-		-s  size        size of the image
-		-S  sparse      size of the sparse image
-		-b  blocksize   default is 4096
+else
+	if [ $uname = "CYGWIN_NT-5.1" ]; then
+	cat <<- -EOF-
+	${PROGNAME} ver. ${VERSION}
+	This is a program to create custom image files.
+	Options:
+	-h, --help      Display this help message and exit.
+	-i  initialize  install an fs [ dos | ext2 | ext3 | swap | hfs | ntfs ]
+	-n  name        name of the image
+	-s  size        size of the image
+	-S  sparse      size of the sparse image
+	-b  blocksize   default is 4096
 
-		-EOF-
-		else
-			if [ $uname = "FreeBSD" ]; then
-			cat <<- -EOF-
-			${PROGNAME} ver. ${VERSION}
-			This is a program to create custom image files.
-			Options:
-			-h, --help      Display this help message and exit.
-			-i  initialize  install an fs [ ext2 | ext3 | hfs | ntfs | reiser | swap | ufs1 | ufs2 | xfs ]
-			-n  name        name of the image
-			-s  size        size of the image
-			-S  sparse      size of the sparse image
-			-b  blocksize   default is 4096
+	-EOF-
+else
+if [ $uname = "FreeBSD" ]; then
+	cat <<- -EOF-
+	${PROGNAME} ver. ${VERSION}
+	This is a program to create custom image files.
+	Options:
+	-h, --help      Display this help message and exit.
+	-i  initialize  install an fs [ ext2 | ext3 | hfs | ntfs | reiser | swap | ufs1 | ufs2 | xfs ]
+	-n  name        name of the image
+	-s  size        size of the image
+	-S  sparse      size of the sparse image
+	-b  blocksize   default is 4096
 
-			-EOF-
-			else
-				if [ $uname = "Linux" ]; then
-				cat <<- -EOF-
-				${PROGNAME} ver. ${VERSION}
-				This is a program to create custom image files.
-				Options:
-				-h, --help      Display this help message and exit.
-				-i  initialize  install an fs [ dos | ext2 | ext3 | hfs | jfs | ntfs | reiser | reiser4 | swap | xfs ]
-				-n  name        name of the image
-				-s  size        size of the image
-				-S  sparse      size of the sparse image
-				-b  blocksize   default is 4096
+	-EOF-
+else
+if [ $uname = "Linux" ]; then
+	cat <<- -EOF-
+	${PROGNAME} ver. ${VERSION}
+	This is a program to create custom image files.
+	Options:
+	-h, --help      Display this help message and exit.
+	-i  initialize  install an fs [ dos | ext2 | ext3 | hfs | jfs | ntfs | reiser | reiser4 | swap | xfs ]
+	-n  name        name of the image
+	-s  size        size of the image
+	-S  sparse      size of the sparse image
+	-b  blocksize   default is 4096
 
-				-EOF-
-				else
-					if [ $uname = "OpenBSD" ]; then
-					cat <<- -EOF-
-					${PROGNAME} ver. ${VERSION}
-					This is a program to create custom image files.
-					Options:
-					-h, --help      Display this help message and exit.
-					-i  initialize  install an fs [ 43bsd | dos | ext2 | ext3 | ffs | hfs | ntfs ]
-					-n  name        name of the image
-					-s  size        size of the image
-					-S  sparse      size of the sparse image
-					-b  blocksize   default is 4096
+	-EOF-
+else
+if [ $uname = "OpenBSD" ]; then
+	cat <<- -EOF-
+	${PROGNAME} ver. ${VERSION}
+	This is a program to create custom image files.
+	Options:
+	-h, --help      Display this help message and exit.
+	-i  initialize  install an fs [ 43bsd | dos | ext2 | ext3 | ffs | hfs | ntfs ]
+	-n  name        name of the image
+	-s  size        size of the image
+	-S  sparse      size of the sparse image
+	-b  blocksize   default is 4096
 
-					-EOF-
-					fi
-				fi
-			fi
-		fi
-	fi
+	-EOF-
+fi
+fi
+fi
+fi
+fi
 fi
 }
 
