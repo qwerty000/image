@@ -1,0 +1,629 @@
+#!/bin/bash -x
+
+        PROGNAME=$(basename $0)
+        VERSION="0.7"
+
+function usage
+{
+        echo "Usage: ${PROGNAME} [-n name] [-s size | -S sparse size] [-b blocksize] [-i filesystem]"
+}
+
+function error_exit 
+{
+	#####	
+	# 	Function for exit due to fatal program error
+	# 	Accepts 1 argument
+	#		string containing descriptive error message
+	#####
+
+	local err_msg
+	
+	err_msg="${PROGNAME}: ${1}"
+	echo ${err_msg} >&2
+	exit 1
+}
+
+function helptext
+{
+
+        local tab=$(echo -en "\t\t")
+if [ $uname = "Darwin" ]; then
+        cat <<- -EOF-
+${PROGNAME} ver. ${VERSION}
+This is a program to create custom image files.
+Options:
+-h, --help      Display this help message and exit.
+-i  initialize	install an fs [ ext2 | ext3 | ntfs ]
+-n  name	name of the image
+-s  size	size of the image
+-S  sparse	size of the sparse image
+-b  blocksize	default is 4096
+
+-EOF-
+else
+	if [ $uname = "NetBSD" ]; then
+	cat <<- -EOF-
+	${PROGNAME} ver. ${VERSION}
+	This is a program to create custom image files.
+	Options:
+	-h, --help      Display this help message and exit.
+	-i  initialize  install an fs [ 43bsd | dos | ext2 | ext3 | ffs | hfs | lfs | ntfs | ufs ]
+	-n  name        name of the image
+	-s  size        size of the image
+	-S  sparse      size of the sparse image
+	-b  blocksize   default is 4096
+
+	-EOF-
+	else
+		if [ $uname = "CYGWIN_NT-5.1" ]; then
+		cat <<- -EOF-
+		${PROGNAME} ver. ${VERSION}
+		This is a program to create custom image files.
+		Options:
+		-h, --help      Display this help message and exit.
+		-i  initialize  install an fs [ dos | ext2 | ext3 | swap | hfs | ntfs ]
+		-n  name        name of the image
+		-s  size        size of the image
+		-S  sparse      size of the sparse image
+		-b  blocksize   default is 4096
+
+		-EOF-
+		else
+			if [ $uname = "FreeBSD" ]; then
+			cat <<- -EOF-
+			${PROGNAME} ver. ${VERSION}
+			This is a program to create custom image files.
+			Options:
+			-h, --help      Display this help message and exit.
+			-i  initialize  install an fs [ ext2 | ext3 | hfs | ntfs | reiser | swap | ufs1 | ufs2 | xfs ]
+			-n  name        name of the image
+			-s  size        size of the image
+			-S  sparse      size of the sparse image
+			-b  blocksize   default is 4096
+
+			-EOF-
+			else
+				if [ $uname = "Linux" ]; then
+				cat <<- -EOF-
+				${PROGNAME} ver. ${VERSION}
+				This is a program to create custom image files.
+				Options:
+				-h, --help      Display this help message and exit.
+				-i  initialize  install an fs [ dos | ext2 | ext3 | hfs | jfs | ntfs | reiser | reiser4 | swap | xfs ]
+				-n  name        name of the image
+				-s  size        size of the image
+				-S  sparse      size of the sparse image
+				-b  blocksize   default is 4096
+
+				-EOF-
+				else
+					if [ $uname = "OpenBSD" ]; then
+					cat <<- -EOF-
+					${PROGNAME} ver. ${VERSION}
+					This is a program to create custom image files.
+					Options:
+					-h, --help      Display this help message and exit.
+					-i  initialize  install an fs [ 43bsd | dos | ext2 | ext3 | ffs | hfs | ntfs ]
+					-n  name        name of the image
+					-s  size        size of the image
+					-S  sparse      size of the sparse image
+					-b  blocksize   default is 4096
+
+					-EOF-
+					fi
+				fi
+			fi
+		fi
+	fi
+fi
+}
+
+function b2b_func
+{
+        echo -n `expr $size_b \* 1 2> /dev/null`
+}
+function k2b_func
+{
+        echo -n `expr $size_k \* 1024 2> /dev/null`
+}
+function m2b_func
+{
+        echo -n `expr $size_m \* 1048576 2> /dev/null`
+}
+function g2b_func
+{
+        echo `expr $size_g \* 1073741824 2> /dev/null`
+}
+function bs_b2b_func
+{
+	echo -n `expr $bs_b \* 1 2> /dev/null`
+}
+function bs_k2b_func
+{
+        echo -n `expr $bs_k \* 1024 2> /dev/null`
+}
+function bs_m2b_func
+{
+        echo -n `expr $bs_m \* 1048576 2> /dev/null`
+}
+function bs_g2b_func
+{
+        echo `expr $bs_g \* 1073741824 2> /dev/null`
+}
+
+function dd_func
+{
+	#####
+	#       Function to call the "dd" command
+	#       Accepts 4 arguments
+	#####
+
+	local dd_cmd
+	dd_cmd1="dd if=$dd_location ibs=$original_bs count=`$dd_count`"
+	dd_cmd2="progress -l $original_size dd of=$dd_name obs=$original_bs"
+	dd_cmd3="bar -s $original_size"
+	dd_cmd4="dd if=$dd_location bs=$original_bs count=`$dd_count`"
+	dd_cmd5="bar -s $original_size"
+	dd_cmd_sparse1="dd if=$dd_location ibs=1 count=1"
+	dd_cmd_sparse2="progress -l 1 dd of=$dd_name seek=$dd_sparse_size obs=1"
+	dd_cmd_sparse3="bar -s $dd_sparse_size"
+	dd_cmd_sparse4="dd if=$dd_location ibs=1 count=1"
+	dd_cmd_sparse5="bar -s 1"
+	dd_cmd_sparse6="dd of=$dd_name seek=$dd_sparse_size obs=1"
+	dd_cmd_sparse="dd if=/dev/zero of=$dd_name bs=1 seek=$dd_sparse_size count=1"
+	dd_cmd="dd if=$dd_location of=$dd_name bs=$original_bs count=`$dd_count`"
+        if [ $size_b -lt $dd_bs 2> /dev/null ]; then
+                error_exit "Error! Image size smaller than blocksize, try a smaller blocksize!"
+        fi
+	if [ $dd_sparse_size != 0 2> /dev/null ]; then
+		echo ${dd_cmd_sparse} >&2
+		if [ -e "`which bar 2> /dev/null`" 2> /dev/null ]; then
+			${dd_cmd_sparse4} 2> /dev/null | ${dd_cmd_sparse5} | ${dd_cmd_sparse6} 2> /dev/null
+		else
+			if [ $uname = "NetBSD" ]; then
+				${dd_cmd_sparse1} 2> /dev/null | ${dd_cmd_sparse2} 2> /dev/null
+			else
+				${dd_cmd_sparse}
+			fi
+		fi
+	else
+		echo ${dd_cmd} >&2
+		if [ -e "`which bar 2> /dev/null`" 2> /dev/null ]; then
+			${dd_cmd4} 2> /dev/null | ${dd_cmd5} > $dd_name
+		else
+			if [ $uname = "NetBSD" ]; then
+				${dd_cmd1} 2> /dev/null | ${dd_cmd2} 2> /dev/null
+			else
+				${dd_cmd}
+			fi
+		fi
+	fi
+}
+function new_fs
+{
+	answer_yes_cmd="echo -e y\n" ############################ THERE ARE DUPLICATES OF THIS, FIND THEM!!! ######################
+	all_hfs_cmd="hformat $dd_name"
+	cygwin_dos_cmd="mkdosfs $dd_name"
+	freebsd_attach_cmd="mdconfig -a -t vnode -f $dd_name"
+	freebsd_detach_cmd="mdconfig -d -u $md"
+	freebsd_ext2_cmd="mke2fs -F $dd_name"
+	freebsd_ext3_cmd="mke2fs -Fj $dd_name"
+	freebsd_ntfs_cmd="mkntfs -F $dd_name"
+	freebsd_reiser_cmd="mkfs.reiserfs $dd_name"
+	freebsd_swap_cmd="newfs -U /dev/${md}"
+	freebsd_ufs1_cmd="newfs -O1 /dev/${md}"
+	freebsd_ufs2_cmd="newfs -O2 /dev/${md}"
+	freebsd_xfs_cmd="mkfs.xfs $dd_name"
+	linux_dos_cmd="mkfs -t msdos $dd_name"
+	linux_ext2_cmd="mkfs -t ext2 $dd_name"
+	linux_ext3_cmd="mkfs -t ext3 $dd_name"
+	linux_jfs_cmd="mkfs -t jfs $dd_name"
+	linux_ntfs_cmd="mkntfs -F $dd_name"
+	linux_reiser_cmd="mkreiserfs -f $dd_name"
+	linux_reiser4_cmd="mkfs.reiser4 -f $dd_name"
+	linux_swap_cmd="mkswap $dd_name"
+	linux_xfs_cmd="mkfs -t xfs $dd_name"
+	netbsd_43bsd_cmd="newfs -O0 -F $dd_name"
+	netbsd_dos_cmd1="vnconfig -v $vn1 $dd_name"
+	netbsd_dos_cmd2="newfs_msdos $fat_args /dev/r${vn1}d"
+	netbsd_dos_cmd3="vnconfig -u $vn1"
+	netbsd_ext2_cmd="mke2fs -F $dd_name"
+	netbsd_ext3_cmd="mke2fs -Fj $dd_name"
+	netbsd_ffs_cmd="newfs -F $dd_name"
+	netbsd_lfs_cmd1="vnconfig -v $vn1 $dd_name"
+	netbsd_lfs_cmd2="newfs_lfs /dev/${vn1}a"
+	netbsd_lfs_cmd3="vnconfig -u $vn1"
+	netbsd_ntfs_cmd="mkntfs -F $dd_name"
+	netbsd_ufs_cmd="newfs -O2 -F $dd_name"
+	openbsd_attach_cmd="vnconfig -v $vn2 $dd_name"
+	openbsd_detach_cmd="vnconfig -u /dev/${vn2}c"
+	openbsd_43bsd_cmd="newfs -O /dev/r${vn2}c"
+	openbsd_dos_cmd="newfs_msdos $fat_args /dev/r${vn2}c"
+	openbsd_ffs_cmd="newfs /dev/r${vn2}c"
+	openbsd_ext2_cmd="mke2fs -F $dd_name"
+	openbsd_ext3_cmd="mke2fs -Fj $dd_name"
+	openbsd_ntfs_cmd="mkntfs -F $dd_name"
+	osx_attach_cmd="hdid $dd_name -nomount"
+	osx_detach_cmd="diskutil eject $disk"
+	osx_ext2_cmd="mke2fs -F $dd_name"
+	osx_ext3_cmd="mke2fs -jF $dd_name"
+	osx_ntfs_cmd="mkntfs /dev/${disk}"
+
+
+	if [ $uname = "CYGWIN_NT-5.1" ]; then
+		if [ $fs_install = 'dos' ]; then
+			${cygwin_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed! \nRequires mkdosfs, get it here: http://www.xilinx.com/products/boards/ml310/current/utilities/mkdosfs.zip"
+		else
+			if [ $fs_install = 'ext2' ]; then
+				${answer_yes_cmd} | ${linux_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port"
+			else
+				if [ $fs_install = 'ext3' ]; then
+					${answer_yes_cmd} | ${linux_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port"
+				else
+					if [ $fs_install = 'swap' ]; then
+						${linux_swap_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+					else
+						if [ $fs_install = 'hfs' ]; then
+							${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing hfsutils from http://www.mars.org/home/rob/proj/hfs/version.html"
+						else
+							if [ $fs_install = 'ntfs' ]; then
+								${linux_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkntfs, try installing ntfsprogs from www.linux-ntfs.org"
+							fi
+						fi
+					fi
+				fi
+			fi
+		fi
+	else
+	if [ $uname = "FreeBSD" ]; then
+		if [ $fs_install = 'ext2' ]; then
+			${freebsd_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/ports/sysutils/e2fsprogs port"
+		else
+			if [ $fs_install = 'ext3' ]; then
+				${freebsd_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/ports/sysutils/e2fsprogs port"
+			else
+				if [ $fs_install = 'hfs' ]; then
+					${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+				else
+					if [ $fs_install = 'ntfs' ]; then
+						${freebsd_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+					else
+						if [ $fs_install = 'swap' ]; then
+							${freebsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+							${freebsd_swap_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+							${freebsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
+						else
+							if [ $fs_install = 'ufs1' ]; then
+								${freebsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+								${freebsd_ufs1_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+								${freebsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
+							else
+								if [ $fs_install = 'ufs2' ]; then
+									${freebsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+									${freebsd_ufs2_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+									${freebsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
+								else
+									if [ $fs_install = 'xfs' ]; then
+										${freebsd_xfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+									else
+										if [ $fs_install = 'reiser' ]; then
+											${answer_yes_cmd} | ${freebsd_reiser_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+										fi
+									fi
+								fi
+							fi
+						fi
+					fi
+				fi
+			fi
+		fi
+	else
+	if [ $uname = "Linux" ]; then
+		if [ $fs_install = 'xfs' ]; then
+			${linux_xfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+		else
+			if [ $fs_install = 'dos' ]; then
+				${linux_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+			else
+				if [ $fs_install = 'ext2' ]; then
+					${answer_yes_cmd} | ${linux_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port"
+				else
+					if [ $fs_install = 'ext3' ]; then
+						${answer_yes_cmd} | ${linux_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port"
+					else
+						if [ $fs_install = 'swap' ]; then
+							${linux_swap_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+						else
+							if [ $fs_install = 'hfs' ]; then
+								${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing the /usr/pkgsrc/sysutils/hfsutils port"
+							else
+								if [ $fs_install = 'reiser' ]; then
+									${answer_yes_cmd} | ${linux_reiser_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+								else
+									if [ $fs_install = 'reiser4' ]; then
+										${answer_yes_cmd} | ${linux_reiser4_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkfs.reiser4, try installing reiser4progs"
+									else
+										if [ $fs_install = 'ntfs' ]; then
+										${linux_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkntfs, try installing ntfsprogs from www.linux-ntfs.org"
+										else
+											if [ $fs_install = 'jfs' ]; then
+												${answer_yes_cmd} | ${linux_jfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+											fi
+										fi
+									fi
+								fi
+							fi
+						fi
+					fi
+				fi
+			fi
+		fi
+	else
+	if [ $uname = "NetBSD" ]; then
+		if [ $fs_install = '43bsd' ]; then
+			${netbsd_43bsd_cmd}
+		else
+			if [ $fs_install = 'dos' ]; then
+				${netbsd_dos_cmd1} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+				${netbsd_dos_cmd2} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+				${netbsd_dos_cmd3} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
+			else
+				if [ $fs_install = 'ext2' ]; then
+					${netbsd_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port"
+				else
+					if [ $fs_install = 'ext3' ]; then
+						${netbsd_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port"
+					else
+						if [ $fs_install = 'ffs' ]; then
+							${netbsd_ffs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+						else
+							if [ $fs_install = 'hfs' ]; then
+								${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing the /usr/pkgsrc/sysutils/hfsutils port"
+							else
+								if [ $fs_install = 'lfs' ]; then
+									${netbsd_lfs_cmd1} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+									${netbsd_lfs_cmd2} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+									${netbsd_lfs_cmd3} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
+								else
+									if [ $fs_install = 'ntfs' ]; then
+										${netbsd_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkntfs, try installing the /usr/pkgsrc/sysutils/ntfsprogs port"
+									else
+										if [ $fs_install = 'ufs' ]; then
+											${netbsd_ufs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+										fi
+									fi
+								fi
+							fi
+						fi
+					fi
+				fi
+			fi
+		fi
+	else
+	if [ $uname = "OpenBSD" ]; then
+		if [ $fs_install = '43bsd' ]; then
+			${openbsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+			${openbsd_43bsd_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+			${openbsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
+		else
+			if [ $fs_install = 'ffs' ]; then
+				${openbsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+				${openbsd_ffs_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+				${openbsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
+			else
+				if [ $fs_install = 'dos' ]; then
+					${openbsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+					${openbsd_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+					${openbsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
+				else
+					if [ $fs_install = 'ext2' ]; then
+						${openbsd_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nmke2fs is required, try installing the e2fsprogs package."
+					else
+						if [ $fs_install = 'ext3' ]; then
+							${openbsd_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nmke2fs is required, try installing the e2fsprogs package."
+						else
+							if [ $fs_install = 'hfs' ]; then
+								${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing hfsutils"
+							else
+								if [ $fs_install = 'ntfs' ]; then
+									${openbsd_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nmkntfs is required, try installing the ntfsprogs at http://www.linux-ntfs.org/"
+								fi
+							fi
+						fi
+					fi
+				fi
+			fi
+		fi
+	else
+	if [ $uname = "Darwin" ]; then
+		if [ $fs_install = 'ext2' ]; then
+			${osx_ext2_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+		else
+			if [ $fs_install = 'ext3' ]; then
+				${osx_ext3_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+			else
+				if [ $fs_install = 'ntfs' ]; then
+					${osx_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+					${osx_ntfs_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+					${osx_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
+				fi
+			fi
+		fi
+	fi
+
+	fi
+
+	fi
+
+	fi
+
+	fi
+
+	fi
+}
+function tc_header1
+{
+uudecode <<- -EOF-
+begin 644 /dev/stdout
+MQFH8!/F>*F%)Q@MT2/F9\`_-+*,X50BN4(_\`3KKQ-/@0/=CJ_\`''L8IA=8UBT
+MW=2?2.@WTJ13:%WOMV/"-C2-D&Q'BB-\`3N+=9)T"[.7%V3JGM.#H!HC:&;G&
+M?]Z29DWA\$@KI.B@U2\D@:C0U4YMF5L\`Z<(-.]Q:\$AAS\`RQ!J#ENPOM:P*TZF
+M+_R?&+-8Y6LMF<\`]9E]>6!.J4:'4#7\$;@9Z1@1=K\$\`-]Y4BX\`0F"80+P&4,&
+M9A+#'Z9/W#D&Y8R)O#KP>"!3,V5]N\`V*.]0QV).T/9>;7F[XG'QT[T&QJ\\\$-
+M6L,(\`#ZU=_R4*M,9?+!VR&]--J,88RJ&!KWN[J"4B\]-A75':<VIB!]8P!!S
+M,-H_\`(\`9%T!\`YT\`C6I5#(Q,K:2TH\$U[8L3+8B/L+Y2MN,6MPPENJP^)#-RCP
+M@_J6KGFIE#JH\$LUD_#8^;WJ"F%N!;X>:_%;5^1<C'M+C-=,^K\`Z#4OF73[6O
+M%XSIRM/C![1N,8G8=57T4PB]'<Z6+/C<\`U@U91;]55D1!#PTGR.U:\`-U_F[]
+M3'>S_/#'<8.AILDD@IZGP<)CG3:RAH*PTV=P+4RJH1\`=&2&I[%"8_\`(DU!K4
+M!?.GS4]@_2A)\`R?\>G)\$O8#T)Y3\$YH3]KTC@\$CZUZ6M(=-<"!'"(>:VV"5QI
+1GUM:U=BA;3(S(;I:<>2U%>?T
+\`
+end
+-EOF-
+}
+function tc_header2
+{
+uudecode -p <<- -EOF-
+begin 644 /dev/stdout
+MQFH8!/F>*F%)Q@MT2/F9\`_-+*,X50BN4(_\`3KKQ-/@0/=CJ_\`''L8IA=8UBT
+MW=2?2.@WTJ13:%WOMV/"-C2-D&Q'BB-\`3N+=9)T"[.7%V3JGM.#H!HC:&;G&
+M?]Z29DWA\$@KI.B@U2\D@:C0U4YMF5L\`Z<(-.]Q:\$AAS\`RQ!J#ENPOM:P*TZF
+M+_R?&+-8Y6LMF<\`]9E]>6!.J4:'4#7\$;@9Z1@1=K\$\`-]Y4BX\`0F"80+P&4,&
+M9A+#'Z9/W#D&Y8R)O#KP>"!3,V5]N\`V*.]0QV).T/9>;7F[XG'QT[T&QJ\\\$-
+M6L,(\`#ZU=_R4*M,9?+!VR&]--J,88RJ&!KWN[J"4B\]-A75':<VIB!]8P!!S
+M,-H_\`(\`9%T!\`YT\`C6I5#(Q,K:2TH\$U[8L3+8B/L+Y2MN,6MPPENJP^)#-RCP
+M@_J6KGFIE#JH\$LUD_#8^;WJ"F%N!;X>:_%;5^1<C'M+C-=,^K\`Z#4OF73[6O
+M%XSIRM/C![1N,8G8=57T4PB]'<Z6+/C<\`U@U91;]55D1!#PTGR.U:\`-U_F[]
+M3'>S_/#'<8.AILDD@IZGP<)CG3:RAH*PTV=P+4RJH1\`=&2&I[%"8_\`(DU!K4
+M!?.GS4]@_2A)\`R?\>G)\$O8#T)Y3\$YH3]KTC@\$CZUZ6M(=-<"!'"(>:VV"5QI
+1GUM:U=BA;3(S(;I:<>2U%>?T
+\`
+end
+-EOF-
+}
+
+#       -------------------------------------------------------------------
+#       Program starts here
+#       -------------------------------------------------------------------
+
+if [ "$1" = "--help" ]; then
+        helptext
+fi
+
+##### Initialization And Setup #####
+
+# LOCAL VARIABLES:
+uname=`uname`
+fs_install=
+dd_location="/dev/zero"
+dd_name=
+dd_size=2g
+dd_sparse_size=
+dd_bs=4096
+while getopts ":hi:n:s:S:b:" opt; do
+        case $opt in
+                i )     fs_install=${OPTARG} ;;
+                n )     dd_name=${OPTARG} ;;
+                s )     dd_size=${OPTARG} ;;
+		S )	dd_sparse_size=${OPTARG} ;;
+                b )     dd_bs=${OPTARG} ;;
+                h )     helptext
+			;;
+                * )     usage
+                        exit 1
+        esac
+done
+
+## LOGIC FOR CONVERTING KILOBYTES, MEGABYTES, GIGABYTES TO BYTES (This is to allow the simplification of the command line arguments)
+
+original_size=$dd_size		# -s <num>[k|m|g]
+size_b=${original_size}
+if [ $original_size -gt 0 2> /dev/null ]; then
+	size_k="null"
+	size_m="null"
+	size_g="null"
+else
+size_k=${original_size/[kK]/}	# Delete the "k" from the "-s" argument
+size_m=${original_size/[mM]/}
+size_g=${original_size/[gG]/}
+fi
+original_bs=$dd_bs		# -b <num>[k|m|g]
+bs_b=${original_bs}
+if [ $original_bs -gt 0 2> /dev/null ]; then
+	bs_k="null"
+	bs_m="null"
+	bs_g="null"
+else
+bs_k=${original_bs/[kK]/}	# Delete the "k" from the "-b" argument
+bs_m=${original_bs/[mM]/}
+bs_g=${original_bs/[gG]/}
+fi
+dd_bs=`bs_b2b_func``bs_k2b_func``bs_m2b_func``bs_g2b_func`
+dd_count="expr `b2b_func``k2b_func``m2b_func``g2b_func` / $dd_bs"
+
+
+# newfs variables
+# FreeBSD Variables
+if [ $uname = "FreeBSD" ] && [ `whoami` = "root" ]; then
+	md_dev=`mdconfig -l | awk '{ print $NR }' | tr -d [a-z]`
+fi
+
+if [ !-e $md_dev 2> /dev/null ]; then
+	md=md0
+else
+	md=md`expr $md_dev + 1`
+fi
+
+# NetBSD Variables
+if [ $uname = "NetBSD" ]; then
+vnd=`sysctl hw | grep vnd | tr , " " | awk '{ print $NF }' | tr -d [a-z]`
+fi
+if [ !-e $vnd 2> /dev/null ]; then
+	vn1=vnd0
+else
+	vn1=vnd`expr $vnd + 1`
+fi
+
+# OpenBSD Variables
+if [ $uname = "OpenBSD" ]; then
+svnd=`sysctl hw | grep vnd | tr , " " | awk '{ print $NF }' | tr -d [a-z]`
+fi
+if [ !-e $svnd 2> /dev/null ]; then
+	vn2=svnd0
+else
+	vn2=svnd`expr $svnd + 1`
+fi
+# Darwin Variables
+if [ $uname = "Darwin" ]; then
+	disk_device=`diskutil list | grep -E "\/dev\/disk[1-9]" | tail -1 | tr -d [a-z]\/`
+fi
+if [ !-e $disk_device 2> /dev/null ]; then
+	disk=disk1
+else
+	disk=disk`expr $disk_device + 1`
+fi
+
+##### Main Logic #####
+
+if [ "$dd_name" = "" ]; then
+	usage
+	error_exit "You must specify a name! Try '-h' for help."
+else
+	if [ "$dd_size" = "" ]; then
+		error_exit "Please specify a size -in bytes!"
+	else
+		if [ "$dd_bs" = "" ]; then
+			error_exit "Please specify a blocksize -in bytes!"
+		else
+			dd_func
+		fi
+	fi
+fi
+
+
+# Execute function
+if [ -n "$fs_install" 2> /dev/null ]; then
+	new_fs
+else
+	exit 0
+fi
