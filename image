@@ -106,6 +106,21 @@ case $( uname ) in
 esac
 }
 
+function convert_to_bytes
+{
+if [ "$1" = "" ]; then
+        echo "Usage: `basename $0` <number>[k|m|g|t]" >&2
+fi
+stdin=$1
+case ${stdin/[kKmMgGtT]/} in
+  $stdin ) echo $(($stdin * 1));; # Convert bytes to bytes
+  ${stdin/[kK]/} ) echo $((${stdin/[kK]/} * 1024));; # Convert kilobytes to bytes
+  ${stdin/[mM]/} ) echo $((${stdin/[mM]/} * 1048576));; # Convert megabytes to bytes
+  ${stdin/[gG]/} ) echo $((${stdin/[gG]/} * 1073741824));; # Convert gigabytes to bytes
+  ${stdin/[tT]/} ) echo $((${stdin/[tT]/} * 1099511627776));; # Convert terabytes to bytes
+  * ) echo "ERROR: Please enter an image size";;
+esac
+}
 function b2b_func
 {
         echo -n `expr $size_b \* 1 2> /dev/null`
