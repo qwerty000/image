@@ -22,100 +22,88 @@ function error_exit
 	echo ${err_msg} >&2
 	exit 1
 }
-
 function helptext
 {
+case $( uname ) in 
+  CYGWIN_NT-5.1 )	cat <<- -EOF-
+			${PROGNAME} ver. ${VERSION}
+			This is a program to create custom image files.
+			Options:
+			-h, --help	Display this help message and exit.
+			-i  initialize	install an fs [ dos | ext2 | ext3 | swap | hfs | ntfs ]
+			-n  name	name of the image
+			-s  size	size of the image
+			-S  sparse	size of the sparse image
+			-b  blocksize	default is 4096
 
-        local tab=$(echo -en "\t\t")
-if [ $uname = "Darwin" ]; then
-        cat <<- -EOF-
-	${PROGNAME} ver. ${VERSION}
-	This is a program to create custom image files.
-	Options:
-	-h, --help      Display this help message and exit.
-	-i  initialize	install an fs [ ext2 | ext3 | ntfs ]
-	-n  name	name of the image
-	-s  size	size of the image
-	-S  sparse	size of the sparse image
-	-b  blocksize	default is 4096
+-EOF-
+			;;
+  Darwin ) 		cat <<- -EOF-
+			${PROGNAME} ver. ${VERSION}
+			This is a program to create custom image files.
+			Options:
+			-h, --help	Display this help message and exit.
+			-i  initialize	install an fs [ ext2 | ext3 | ntfs ]
+			-n  name	name of the image
+			-s  size	size of the image
+			-S  sparse	size of the sparse image
+			-b  blocksize	default is 4096
+			-EOF-
+			;;
+  FreeBSD )		cat <<- -EOF-
+			${PROGNAME} ver. ${VERSION}
+			This is a program to create custom image files.
+			Options:
+			-h, --help	Display this help message and exit.
+			-i  initialize	install an fs [ ext2 | ext3 | hfs | ntfs | reiser | swap | ufs1 | ufs2 | xfs ]
+			-n  name	name of the image
+			-s  size	size of the image
+			-S  sparse	size of the sparse image
+			-b  blocksize	default is 4096
 
-	-EOF-
-else
-	if [ $uname = "NetBSD" ]; then
-	cat <<- -EOF-
-	${PROGNAME} ver. ${VERSION}
-	This is a program to create custom image files.
-	Options:
-	-h, --help      Display this help message and exit.
-	-i  initialize  install an fs [ 43bsd | dos | ext2 | ext3 | ffs | hfs | lfs | ntfs | ufs ]
-	-n  name        name of the image
-	-s  size        size of the image
-	-S  sparse      size of the sparse image
-	-b  blocksize   default is 4096
+			-EOF-
+			;;
+  Linux )		cat <<- -EOF-
+			${PROGNAME} ver. ${VERSION}
+			This is a program to create custom image files.
+			Options:
+			-h, --help	Display this help message and exit.
+			-i  initialize	install an fs [ dos | ext2 | ext3 | hfs | jfs | ntfs | reiser | reiser4 | swap | xfs ]
+			-n  name	name of the image
+			-s  size	size of the image
+			-S  sparse	size of the sparse image
+			-b  blocksize	default is 4096
 
-	-EOF-
-else
-	if [ $uname = "CYGWIN_NT-5.1" ]; then
-	cat <<- -EOF-
-	${PROGNAME} ver. ${VERSION}
-	This is a program to create custom image files.
-	Options:
-	-h, --help      Display this help message and exit.
-	-i  initialize  install an fs [ dos | ext2 | ext3 | swap | hfs | ntfs ]
-	-n  name        name of the image
-	-s  size        size of the image
-	-S  sparse      size of the sparse image
-	-b  blocksize   default is 4096
+			-EOF-
+			;;
+  NetBSD )		cat <<- -EOF-
+			${PROGNAME} ver. ${VERSION}
+			This is a program to create custom image files.
+			Options:
+			-h, --help	Display this help message and exit.
+			-i  initialize	install an fs [ 43bsd | dos | ext2 | ext3 | ffs | hfs | lfs | ntfs | ufs ]
+			-n  name	name of the image
+			-s  size	size of the image
+			-S  sparse	size of the sparse image
+			-b  blocksize	default is 4096
 
-	-EOF-
-else
-if [ $uname = "FreeBSD" ]; then
-	cat <<- -EOF-
-	${PROGNAME} ver. ${VERSION}
-	This is a program to create custom image files.
-	Options:
-	-h, --help      Display this help message and exit.
-	-i  initialize  install an fs [ ext2 | ext3 | hfs | ntfs | reiser | swap | ufs1 | ufs2 | xfs ]
-	-n  name        name of the image
-	-s  size        size of the image
-	-S  sparse      size of the sparse image
-	-b  blocksize   default is 4096
+			-EOF-
+			;;
+  OpenBSD )		cat <<- -EOF-
+			${PROGNAME} ver. ${VERSION}
+			This is a program to create custom image files.
+			Options:
+			-h, --help	Display this help message and exit.
+			-i  initialize	install an fs [ 43bsd | dos | ext2 | ext3 | ffs | hfs | ntfs ]
+			-n  name	name of the image
+			-s  size	size of the image
+			-S  sparse	size of the sparse image
+			-b  blocksize	default is 4096
 
-	-EOF-
-else
-if [ $uname = "Linux" ]; then
-	cat <<- -EOF-
-	${PROGNAME} ver. ${VERSION}
-	This is a program to create custom image files.
-	Options:
-	-h, --help      Display this help message and exit.
-	-i  initialize  install an fs [ dos | ext2 | ext3 | hfs | jfs | ntfs | reiser | reiser4 | swap | xfs ]
-	-n  name        name of the image
-	-s  size        size of the image
-	-S  sparse      size of the sparse image
-	-b  blocksize   default is 4096
-
-	-EOF-
-else
-if [ $uname = "OpenBSD" ]; then
-	cat <<- -EOF-
-	${PROGNAME} ver. ${VERSION}
-	This is a program to create custom image files.
-	Options:
-	-h, --help      Display this help message and exit.
-	-i  initialize  install an fs [ 43bsd | dos | ext2 | ext3 | ffs | hfs | ntfs ]
-	-n  name        name of the image
-	-s  size        size of the image
-	-S  sparse      size of the sparse image
-	-b  blocksize   default is 4096
-
-	-EOF-
-fi
-fi
-fi
-fi
-fi
-fi
+			-EOF-
+			;;
+  *    ) echo "Other type of machine";;
+esac
 }
 
 function b2b_func
@@ -124,10 +112,14 @@ function b2b_func
 }
 function k2b_func
 {
+	# Kilobyte to byte conversion
+	# x * 1024
         echo -n `expr $size_k \* 1024 2> /dev/null`
 }
 function m2b_func
 {
+	# Megabyte to byte conversion
+	# x * 1048576
         echo -n `expr $size_m \* 1048576 2> /dev/null`
 }
 function g2b_func
