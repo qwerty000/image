@@ -24,6 +24,7 @@ function error_exit
 }
 function helptext
 {
+# Depending on OS we display different help texts
 case $( uname ) in 
   CYGWIN_NT-5.1 )	cat <<- -EOF-
 			${PROGNAME} ver. ${VERSION}
@@ -36,7 +37,7 @@ case $( uname ) in
 			-S  sparse	size of the sparse image
 			-b  blocksize	default is 4096
 
--EOF-
+			-EOF-
 			;;
   Darwin ) 		cat <<- -EOF-
 			${PROGNAME} ver. ${VERSION}
@@ -108,6 +109,7 @@ esac
 
 function convert_to_bytes
 {
+# CURRENTLY NOT IN USE!
 if [ "$1" = "" ]; then
         echo "Usage: `basename $0` <number>[k|m|g|t]" >&2
 fi
@@ -121,6 +123,7 @@ case ${stdin/[kKmMgGtT]/} in
   * ) echo "ERROR: Please enter an image size";;
 esac
 }
+
 function b2b_func
 {
         echo -n `expr $size_b \* 1 2> /dev/null`
@@ -208,7 +211,7 @@ function dd_func
 }
 function new_fs
 {
-	answer_yes_cmd="echo -e y\n" ############################ THERE ARE DUPLICATES OF THIS, FIND THEM!!! ######################
+	answer_yes_cmd="echo -e y\n" # To make things not so interactive we default to "yes" ############################ THERE ARE DUPLICATES OF THIS, FIND THEM!!! ######################
 	all_hfs_cmd="hformat $dd_name"
 	cygwin_dos_cmd="mkdosfs $dd_name"
 	freebsd_attach_cmd="mdconfig -a -t vnode -f $dd_name"
@@ -257,224 +260,97 @@ function new_fs
 	osx_ntfs_cmd="mkntfs /dev/${disk}"
 
 
-	if [ $uname = "CYGWIN_NT-5.1" ]; then
-	if [ $fs_install = 'dos' ]; then
-		${cygwin_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed! \nRequires mkdosfs, get it here: http://www.xilinx.com/products/boards/ml310/current/utilities/mkdosfs.zip"
-	else
-	if [ $fs_install = 'ext2' ]; then
-		${answer_yes_cmd} | ${linux_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port"
-	else
-	if [ $fs_install = 'ext3' ]; then
-		${answer_yes_cmd} | ${linux_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port"
-	else
-	if [ $fs_install = 'swap' ]; then
-		${linux_swap_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
-	else
-	if [ $fs_install = 'hfs' ]; then
-		${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing hfsutils from http://www.mars.org/home/rob/proj/hfs/version.html"
-	else
-	if [ $fs_install = 'ntfs' ]; then
-		${linux_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkntfs, try installing ntfsprogs from www.linux-ntfs.org"
-	fi
-	fi
-	fi
-	fi
-	fi
-	fi
-	else
-	if [ $uname = "FreeBSD" ]; then
-		if [ $fs_install = 'ext2' ]; then
-			${freebsd_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/ports/sysutils/e2fsprogs port"
-		else
-		if [ $fs_install = 'ext3' ]; then
-			${freebsd_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/ports/sysutils/e2fsprogs port"
-		else
-		if [ $fs_install = 'hfs' ]; then
-			${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
-		else
-		if [ $fs_install = 'ntfs' ]; then
-			${freebsd_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
-		else
-		if [ $fs_install = 'swap' ]; then
-			${freebsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
-			${freebsd_swap_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
-			${freebsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
-		else
-		if [ $fs_install = 'ufs1' ]; then
-			${freebsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
-			${freebsd_ufs1_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
-			${freebsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
-		else
-		if [ $fs_install = 'ufs2' ]; then
-			${freebsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
-			${freebsd_ufs2_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
-			${freebsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
-		else
-		if [ $fs_install = 'xfs' ]; then
-			${freebsd_xfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
-		else
-		if [ $fs_install = 'reiser' ]; then
-			${answer_yes_cmd} | ${freebsd_reiser_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-	else
-	if [ $uname = "Linux" ]; then
-		if [ $fs_install = 'xfs' ]; then
-			${linux_xfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
-		else
-		if [ $fs_install = 'dos' ]; then
-			${linux_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
-		else
-		if [ $fs_install = 'ext2' ]; then
-			${answer_yes_cmd} | ${linux_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port"
-		else
-		if [ $fs_install = 'ext3' ]; then
-			${answer_yes_cmd} | ${linux_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port"
-		else
-		if [ $fs_install = 'swap' ]; then
-			${linux_swap_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
-		else
-		if [ $fs_install = 'hfs' ]; then
-			${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing the /usr/pkgsrc/sysutils/hfsutils port"
-		else
-		if [ $fs_install = 'reiser' ]; then
-			${answer_yes_cmd} | ${linux_reiser_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
-		else
-		if [ $fs_install = 'reiser4' ]; then
-			${answer_yes_cmd} | ${linux_reiser4_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkfs.reiser4, try installing reiser4progs"
-		else
-		if [ $fs_install = 'ntfs' ]; then
-			${linux_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkntfs, try installing ntfsprogs from www.linux-ntfs.org"
-		else
-		if [ $fs_install = 'jfs' ]; then
-			${answer_yes_cmd} | ${linux_jfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-	else
-	if [ $uname = "NetBSD" ]; then
-		if [ $fs_install = '43bsd' ]; then
-			${netbsd_43bsd_cmd}
-		else
-		if [ $fs_install = 'dos' ]; then
-			${netbsd_dos_cmd1} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
-			${netbsd_dos_cmd2} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
-			${netbsd_dos_cmd3} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
-		else
-		if [ $fs_install = 'ext2' ]; then
-			${netbsd_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port"
-		else
-		if [ $fs_install = 'ext3' ]; then
-			${netbsd_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port"
-		else
-		if [ $fs_install = 'ffs' ]; then
-			${netbsd_ffs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
-		else
-		if [ $fs_install = 'hfs' ]; then
-			${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing the /usr/pkgsrc/sysutils/hfsutils port"
-		else
-		if [ $fs_install = 'lfs' ]; then
-			${netbsd_lfs_cmd1} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
-			${netbsd_lfs_cmd2} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
-			${netbsd_lfs_cmd3} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
-		else
-		if [ $fs_install = 'ntfs' ]; then
-			${netbsd_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkntfs, try installing the /usr/pkgsrc/sysutils/ntfsprogs port"
-		else
-		if [ $fs_install = 'ufs' ]; then
-			${netbsd_ufs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-	else
-	if [ $uname = "OpenBSD" ]; then
-		if [ $fs_install = '43bsd' ]; then
-			${openbsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
-			${openbsd_43bsd_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
-			${openbsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
-		else
-		if [ $fs_install = 'ffs' ]; then
-			${openbsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
-			${openbsd_ffs_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
-			${openbsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
-		else
-		if [ $fs_install = 'dos' ]; then
-			${openbsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
-			${openbsd_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
-			${openbsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
-		else
-		if [ $fs_install = 'ext2' ]; then
-			${openbsd_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nmke2fs is required, try installing the e2fsprogs package."
-		else
-		if [ $fs_install = 'ext3' ]; then
-			${openbsd_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nmke2fs is required, try installing the e2fsprogs package."
-		else
-		if [ $fs_install = 'hfs' ]; then
-			${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing hfsutils"
-		else
-		if [ $fs_install = 'ntfs' ]; then
-			${openbsd_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nmkntfs is required, try installing the ntfsprogs at http://www.linux-ntfs.org/"
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-		fi
-	else
-	if [ $uname = "Darwin" ]; then
-		if [ $fs_install = 'ext2' ]; then
-			${osx_ext2_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
-		else
-		if [ $fs_install = 'ext3' ]; then
-			${osx_ext3_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
-		else
-		if [ $fs_install = 'ntfs' ]; then
-			${osx_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
-			${osx_ntfs_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
-			${osx_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!"
-		fi
-		fi
-		fi
-	fi
-	fi
-	fi
-	fi
-	fi
-	fi
-}
 
-#       -------------------------------------------------------------------
-#       Program starts here
-#       -------------------------------------------------------------------
+case $( uname ) in
+	CYGWIN_NT-5.1 ) case $fs_install in
+				dos	) ${cygwin_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed! \nRequires mkdosfs, get it here: http://www.xilinx.com/products/boards/ml310/current/utilities/mkdosfs.zip";;
+				ext2	) ${answer_yes_cmd} | ${linux_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
+				ext3	) ${answer_yes_cmd} | ${linux_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
+				swap	) ${linux_swap_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
+				hfs	) ${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing hfsutils from http://www.mars.org/home/rob/proj/hfs/version.html";;
+				ntfs	) ${linux_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkntfs, try installing ntfsprogs from www.linux-ntfs.org";;
+				*	) echo "ERROR: Unrecognized filesystem: \"$fs_install\"." >&2;;
+			esac;;
+	FreeBSD	) case $fs_install in
+				ext2	) ${freebsd_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/ports/sysutils/e2fsprogs port";;
+				ext3	) ${freebsd_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/ports/sysutils/e2fsprogs port";;
+				hfs	) ${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
+				ntfs	) ${freebsd_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
+				swap	) ${freebsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+						${freebsd_swap_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+						${freebsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!";;
+				ufs1	) ${freebsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+						${freebsd_ufs1_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!"
+						${freebsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!";;
+				ufs2	) ${freebsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+						${freebsd_ufs2_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+						${freebsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!";;
+				xfs	) ${freebsd_xfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
+				reiser	) ${answer_yes_cmd} | ${freebsd_reiser_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
+				*	) echo "ERROR: Unrecognized filesystem: \"$fs_install\"." >&2;;
+		esac;;
+	Linux	) case $fs_install in
+				xfs	) ${linux_xfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
+				dos	) ${linux_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!";;
+				ext2	) ${answer_yes_cmd} | ${linux_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
+				ext3	) ${answer_yes_cmd} | ${linux_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
+				swap	) ${linux_swap_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
+				hfs	) ${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing the /usr/pkgsrc/sysutils/hfsutils port";;
+				reiser	) ${answer_yes_cmd} | ${linux_reiser_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
+				reiser4	) ${answer_yes_cmd} | ${linux_reiser4_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkfs.reiser4, try installing reiser4progs";;
+				ntfs	) ${linux_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkntfs, try installing ntfsprogs from www.linux-ntfs.org";;
+				jfs	) ${answer_yes_cmd} | ${linux_jfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
+				*	) echo "ERROR: Unrecognized filesystem: \"$fs_install\"." >&2;;
+		esac;;
+	NetBSD	) case $fs_install in
+				43bsd	) ${netbsd_43bsd_cmd};;
+				dos	) ${netbsd_dos_cmd1} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+						${netbsd_dos_cmd2} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+						${netbsd_dos_cmd3} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!";;
+				ext2	) ${netbsd_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
+				ext3	) ${netbsd_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
+				ffs	) ${netbsd_ffs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
+				hfs	) ${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing the /usr/pkgsrc/sysutils/hfsutils port";;
+				lfs	) ${netbsd_lfs_cmd1} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+						${netbsd_lfs_cmd2} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+						${netbsd_lfs_cmd3} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!";;
+				ntfs	) ${netbsd_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkntfs, try installing the /usr/pkgsrc/sysutils/ntfsprogs port";;
+				ufs	) ${netbsd_ufs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
+				*	) echo "ERROR: Unrecognized filesystem: \"$fs_install\"." >&2;;
+		esac;;
+	OpenBSD	) case $fs_install in
+				43bsd	) ${openbsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+						${openbsd_43bsd_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+						${openbsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!";;
+				ffs	) ${openbsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+						${openbsd_ffs_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+						${openbsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!";;
+				dos	) ${openbsd_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+						${openbsd_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+						${openbsd_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!";;
+				ext2	) ${openbsd_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nmke2fs is required, try installing the e2fsprogs package.";;
+				ext3	) ${openbsd_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nmke2fs is required, try installing the e2fsprogs package.";;
+				hfs	) ${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing hfsutils";;
+				ntfs	) ${openbsd_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nmkntfs is required, try installing the ntfsprogs at http://www.linux-ntfs.org/";;
+				*	) echo "ERROR: Unrecognized filesystem: \"$fs_install\"." >&2;;
+		esac;;
+	Darwin	) case $fs_install in
+				ext2	) ${osx_ext2_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!";;
+				ext3	) ${osx_ext3_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!";;
+				ntfs	) ${osx_attach_cmd} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
+						${osx_ntfs_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!"
+						${osx_detach_cmd} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!";;
+				*	) echo "ERROR: Unrecognized filesystem: \"$fs_install\"." >&2;;
+		esac;;
+	*	) echo "ERROR: YARRR" ;;
+esac
+}
 
 if [ "$1" = "--help" ]; then
         helptext
 fi
 
-##### Initialization And Setup #####
-
-# LOCAL VARIABLES:
+# Here we setup our arguments for initialization, name, size, sparse size, block size, help, & usage of the script.
 uname=`uname`
 fs_install=
 dd_location="/dev/zero"
