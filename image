@@ -126,7 +126,7 @@ esac
 
 function b2b_func
 {
-        echo -n `expr $size_b \* 1 2> /dev/null`
+	echo -n `expr ${size_b/[bB]/} \* 1 2> /dev/null`
 }
 function k2b_func
 {
@@ -182,7 +182,7 @@ function dd_func
 	dd_cmd_sparse6="dd of=$dd_name seek=$dd_sparse_size obs=1"
 	dd_cmd_sparse="dd if=/dev/zero of=$dd_name bs=1 seek=$dd_sparse_size count=1"
 	dd_cmd="dd if=$dd_location of=$dd_name bs=$original_bs count=`$dd_count`"
-        if [ $size_b -lt $dd_bs 2> /dev/null ]; then
+        if [ ${size_b/[bB]/} -lt $dd_bs 2> /dev/null ]; then
                 error_exit "Error! Image size smaller than blocksize, try a smaller blocksize!"
         fi
 	if [ $dd_sparse_size != 0 2> /dev/null ]; then
