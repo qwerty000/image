@@ -146,7 +146,8 @@ function g2b_func
 }
 function bs_b2b_func
 {
-	echo -n `expr $bs_b \* 1 2> /dev/null`
+	#echo -n `expr $bs_b \* 1 2> /dev/null`
+	echo -n `expr ${bs_b/[bB]/} \* 1 2> /dev/null`
 }
 function bs_k2b_func
 {
@@ -170,7 +171,7 @@ function dd_func
 
 	local dd_cmd
 	dd_cmd1="dd if=$dd_location ibs=$original_bs count=`$dd_count`"
-	dd_cmd2="progress -l $original_size dd of=$dd_name obs=$original_bs"
+	dd_cmd2="progress -l ${original_size/[bB]/} dd of=$dd_name obs=$original_bs"
 	dd_cmd3="bar -s $original_size"
 	dd_cmd4="dd if=$dd_location bs=$original_bs count=`$dd_count`"
 	dd_cmd5="bar -s $original_size"
