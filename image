@@ -1,4 +1,4 @@
-#!/usr/pkg/bin/bash
+#!/usr/bash
 
         PROGNAME=$(basename $0)
         VERSION="0.7"
