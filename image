@@ -35,7 +35,7 @@ case $( uname ) in
 			-n  name	name of the image
 			-s  size	size of the image
 			-S  sparse	size of the sparse image
-			-b  blocksize	default is 4096
+			-b  blocksize	default is 4096 bytes
 
 			-EOF-
 			;;
@@ -48,7 +48,7 @@ case $( uname ) in
 			-n  name	name of the image
 			-s  size	size of the image
 			-S  sparse	size of the sparse image
-			-b  blocksize	default is 4096
+			-b  blocksize	default is 4096 bytes
 			-EOF-
 			;;
   FreeBSD )		cat <<- -EOF-
@@ -60,7 +60,7 @@ case $( uname ) in
 			-n  name	name of the image
 			-s  size	size of the image
 			-S  sparse	size of the sparse image
-			-b  blocksize	default is 4096
+			-b  blocksize	default is 4096 bytes
 
 			-EOF-
 			;;
@@ -73,7 +73,7 @@ case $( uname ) in
 			-n  name	name of the image
 			-s  size	size of the image
 			-S  sparse	size of the sparse image
-			-b  blocksize	default is 4096
+			-b  blocksize	default is 4096 bytes
 
 			-EOF-
 			;;
@@ -86,7 +86,7 @@ case $( uname ) in
 			-n  name	name of the image
 			-s  size	size of the image
 			-S  sparse	size of the sparse image
-			-b  blocksize	default is 4096
+			-b  blocksize	default is 4096 bytes
 
 			-EOF-
 			;;
@@ -99,7 +99,7 @@ case $( uname ) in
 			-n  name	name of the image
 			-s  size	size of the image
 			-S  sparse	size of the sparse image
-			-b  blocksize	default is 4096
+			-b  blocksize	default is 4096 bytes
 
 			-EOF-
 			;;
@@ -188,23 +188,29 @@ function dd_func
         fi
 	if [ $dd_sparse_size != 0 2> /dev/null ]; then
 		echo ${dd_cmd_sparse} >&2
+		# If you have Michael Peek's "Command Line Progress Bar" installed you will get a pretty progress bar when creating image files:
 		if [ -e "`which bar 2> /dev/null`" 2> /dev/null ]; then
 			${dd_cmd_sparse4} 2> /dev/null | ${dd_cmd_sparse5} | ${dd_cmd_sparse6}
 		else
+			# If instead you are on NetBSD you will automatically use progress(1) to get a nice progress bar when creating image files:
 			if [ $uname = "NetBSD" ]; then
 				${dd_cmd_sparse1} 2> /dev/null | ${dd_cmd_sparse2} 2> /dev/null
 			else
+				# No progress bar for you, sorry :(
 				${dd_cmd_sparse}
 			fi
 		fi
 	else
 		echo ${dd_cmd} >&2
+		# If you have Michael Peek's "Command Line Progress Bar" installed you will get a pretty progress bar when creating image files:
 		if [ -e "`which bar 2> /dev/null`" 2> /dev/null ]; then
 			${dd_cmd4} 2> /dev/null | ${dd_cmd5} > $dd_name
 		else
+			# If instead you are on NetBSD you will automatically use progress(1) to get a nice progress bar when creating image files:
 			if [ $uname = "NetBSD" ]; then
 				${dd_cmd1} 2> /dev/null | ${dd_cmd2} 2> /dev/null
 			else
+				# No progress bar for you, sorry :(
 				${dd_cmd}
 			fi
 		fi
