@@ -189,7 +189,7 @@ function dd_func
 	if [ $dd_sparse_size != 0 2> /dev/null ]; then
 		echo ${dd_cmd_sparse} >&2
 		if [ -e "`which bar 2> /dev/null`" 2> /dev/null ]; then
-			${dd_cmd_sparse4} 2> /dev/null | ${dd_cmd_sparse5} | ${dd_cmd_sparse6} 2> /dev/null
+			${dd_cmd_sparse4} 2> /dev/null | ${dd_cmd_sparse5} | ${dd_cmd_sparse6}
 		else
 			if [ $uname = "NetBSD" ]; then
 				${dd_cmd_sparse1} 2> /dev/null | ${dd_cmd_sparse2} 2> /dev/null
