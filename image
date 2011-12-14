@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/pkg/bin/bash
 
         PROGNAME=$(basename $0)
         VERSION="0.7"
@@ -193,11 +193,15 @@ function dd_func
 			${dd_cmd_sparse4} 2> /dev/null | ${dd_cmd_sparse5} | ${dd_cmd_sparse6}
 		else
 			# If instead you are on NetBSD you will automatically use progress(1) to get a nice progress bar when creating image files:
-			if [ $uname = "NetBSD" ]; then
-				${dd_cmd_sparse1} 2> /dev/null | ${dd_cmd_sparse2} 2> /dev/null
+			if [ $uname = "NetBSD" ] && [ ${BASH_VERSINFO[0]} -ge 4 ]; then
+				${dd_cmd_sparse1} 2> /dev/null | ${dd_cmd_sparse2,,} 2> /dev/null
 			else
-				# No progress bar for you, sorry :(
-				${dd_cmd_sparse}
+				if [ $uname = "NetBSD" ] && [ ${BASH_VERSINFO[0]} -lt 4 ]; then
+					${dd_cmd_sparse1} 2> /dev/null | ${dd_cmd_sparse2} 2> /dev/null
+				else
+					# No progress bar for you, sorry :(
+					${dd_cmd_sparse}
+				fi
 			fi
 		fi
 	else
