@@ -175,12 +175,16 @@ function dd_func
 	dd_cmd3="bar -dan -bbfg magenta -bfg magenta -s $original_size"
 	dd_cmd4="dd if=$dd_location bs=$original_bs count=`$dd_count`"
 	dd_cmd5="bar -dan -bbfg magenta -bfg magenta -s $original_size"
+	dd_cmd_pv3="pv -s $original_size"
+	dd_cmd_pv5="pv -s $original_size"
 	dd_cmd_sparse1="dd if=$dd_location ibs=1 count=1"
 	dd_cmd_sparse2="progress -l 1 dd of=$dd_name seek=$dd_sparse_size obs=1"
 	dd_cmd_sparse3="bar -dan -bbfg magenta -bfg magenta -s $dd_sparse_size"
 	dd_cmd_sparse4="dd if=$dd_location ibs=1 count=1"
 	dd_cmd_sparse5="bar -dan -bbfg magenta -bfg magenta -s 1"
 	dd_cmd_sparse6="dd of=$dd_name seek=$dd_sparse_size obs=1"
+	dd_cmd_sparse_pv3="pv -s $dd_sparse_size"
+	dd_cmd_sparse_pv5="pv -s 1"
 	dd_cmd_sparse="dd if=/dev/zero of=$dd_name bs=1 seek=$dd_sparse_size count=1"
 	dd_cmd="dd if=$dd_location of=$dd_name bs=$original_bs count=`$dd_count`"
         if [ ${size_b/[bB]/} -lt $dd_bs 2> /dev/null ]; then
@@ -188,27 +192,36 @@ function dd_func
         fi
 	if [ $dd_sparse_size != 0 2> /dev/null ]; then
 		echo ${dd_cmd_sparse} >&2
-		if [ -e "`which bar 2> /dev/null`" 2> /dev/null ]; then
-			${dd_cmd_sparse4} 2> /dev/null | ${dd_cmd_sparse5} | ${dd_cmd_sparse6}
+		if [ -e "`which pv 2> /dev/null`" 2> /dev/null ]; then
+			${dd_cmd_sparse4} 2> /dev/null | ${dd_cmd_sparse_pv5} | ${dd_cmd_sparse6}
 		else
-			if [ $uname = "NetBSD" ]; then
-				${dd_cmd_sparse1} 2> /dev/null | ${dd_cmd_sparse2} 2> /dev/null
+			if [ -e "`which bar 2> /dev/null`" 2> /dev/null ]; then
+				${dd_cmd_sparse4} 2> /dev/null | ${dd_cmd_sparse5} | ${dd_cmd_sparse6}
 			else
-				${dd_cmd_sparse}
+				if [ $uname = "NetBSD" ]; then
+					${dd_cmd_sparse1} 2> /dev/null | ${dd_cmd_sparse2} 2> /dev/null
+				else
+					${dd_cmd_sparse}
+				fi
 			fi
 		fi
 	else
 		echo ${dd_cmd} >&2
-		# If you have Michael Peek's "Command Line Progress Bar" installed you will get a pretty progress bar when creating image files:
-		if [ -e "`which bar 2> /dev/null`" 2> /dev/null ]; then
-			${dd_cmd4} 2> /dev/null | ${dd_cmd5} > $dd_name
+		# If you have Andrew Wood's "Pipe Viewer" installed you will get a pretty progress bar (http://www.ivarch.com/programs/pv.shtml):
+		if [ -e "`which pv 2> /dev/null`" 2> /dev/null ]; then
+			${dd_cmd4} 2> /dev/null | ${dd_cmd_pv5} > $dd_name
 		else
-			# If instead you are on NetBSD you will automatically use progress(1) to get a nice progress bar when creating image files:
-			if [ $uname = "NetBSD" ]; then
-				${dd_cmd1} 2> /dev/null | ${dd_cmd2} 2> /dev/null
+			# If you have Michael Peek's "Command Line Progress Bar" installed you will get a pretty progress bar when creating image files (http://clpbar.sourceforge.net):
+			if [ -e "`which bar 2> /dev/null`" 2> /dev/null ]; then
+				${dd_cmd4} 2> /dev/null | ${dd_cmd5} > $dd_name
 			else
-				# No progress bar for you, sorry :(
-				${dd_cmd}
+				# If instead you are on NetBSD you will automatically use progress(1) to get a nice progress bar when creating image files:
+				if [ $uname = "NetBSD" ]; then
+					${dd_cmd1} 2> /dev/null | ${dd_cmd2} 2> /dev/null
+				else
+					# No progress bar for you, sorry :(
+					${dd_cmd}
+				fi
 			fi
 		fi
 	fi
