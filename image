@@ -69,7 +69,7 @@ case $( uname ) in
 			This is a program to create custom image files.
 			Options:
 			-h, --help	Display this help message and exit.
-			-i  initialize	install an fs [ dos | ext2 | ext3 | hfs | jfs | ntfs | reiser | reiser4 | swap | xfs ]
+			-i  initialize	install an fs [ btrfs | dos | ext2 | ext3 | hfs | jfs | ntfs | reiser | reiser4 | swap | xfs ]
 			-n  name	name of the image
 			-s  size	size of the image
 			-S  sparse	size of the sparse image
@@ -241,6 +241,7 @@ function new_fs
 	freebsd_ufs1_cmd="newfs -O1 /dev/${md}"
 	freebsd_ufs2_cmd="newfs -O2 /dev/${md}"
 	freebsd_xfs_cmd="mkfs.xfs $dd_name"
+	linux_btrfs_cmd="mkfs.btrfs $dd_name"
 	linux_dos_cmd="mkfs -t msdos $dd_name"
 	linux_ext2_cmd="mkfs -t ext2 $dd_name"
 	linux_ext3_cmd="mkfs -t ext3 $dd_name"
@@ -309,6 +310,7 @@ case $( uname ) in
 	Linux	) case $fs_install in
 				xfs	) ${linux_xfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
 				dos	) ${linux_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!";;
+				btrfs	) ${linux_btrfs_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed!";;
 				ext2	) ${answer_yes_cmd} | ${linux_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
 				ext3	) ${answer_yes_cmd} | ${linux_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
 				swap	) ${linux_swap_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
