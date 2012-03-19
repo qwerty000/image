@@ -26,7 +26,7 @@ function helptext
 {
 # Depending on OS we display different help texts
 case $( uname ) in 
-  CYGWIN_NT-5.1 )	cat <<- -EOF-
+  CYGWIN_NT-5.1 | CYGWIN_NT-6.1-WOW64 )	cat <<- -EOF-
 			${PROGNAME} ver. ${VERSION}
 			This is a program to create custom image files.
 			Options:
@@ -280,7 +280,7 @@ function new_fs
 
 
 case $( uname ) in
-	CYGWIN_NT-5.1 ) case $fs_install in
+	CYGWIN_NT-5.1 | CYGWIN_NT-6.1-WOW64 ) case $fs_install in
 				dos	) ${cygwin_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed! \nRequires mkdosfs, get it here: http://www.xilinx.com/products/boards/ml310/current/utilities/mkdosfs.zip";;
 				ext2	) ${answer_yes_cmd} | ${linux_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
 				ext3	) ${answer_yes_cmd} | ${linux_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
