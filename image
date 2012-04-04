@@ -31,7 +31,7 @@ case $( uname ) in
 			This is a program to create custom image files.
 			Options:
 			-h, --help	Display this help message and exit.
-			-i  initialize	install an fs [ dos | ext2 | ext3 | swap | hfs | ntfs ]
+			-i  initialize	install an fs [ dos | ext2 | ext3 | ext4 | swap | hfs | ntfs ]
 			-n  name	name of the image
 			-s  size	size of the image
 			-S  sparse	size of the sparse image
@@ -245,6 +245,7 @@ function new_fs
 	linux_dos_cmd="mkfs -t msdos $dd_name"
 	linux_ext2_cmd="mkfs -t ext2 $dd_name"
 	linux_ext3_cmd="mkfs -t ext3 $dd_name"
+	linux_ext4_cmd="mkfs -t ext4 $dd_name"
 	linux_jfs_cmd="mkfs -t jfs $dd_name"
 	linux_ntfs_cmd="mkntfs -F $dd_name"
 	linux_reiser_cmd="mkreiserfs -f $dd_name"
@@ -281,9 +282,10 @@ function new_fs
 
 case $( uname ) in
 	CYGWIN_NT-5.1 | CYGWIN_NT-6.1-WOW64 ) case $fs_install in
-				dos	) ${cygwin_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed! \nRequires mkdosfs, get it here: http://www.xilinx.com/products/boards/ml310/current/utilities/mkdosfs.zip";;
-				ext2	) ${answer_yes_cmd} | ${linux_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
-				ext3	) ${answer_yes_cmd} | ${linux_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
+				dos	) ${cygwin_dos_cmd} && echo -e "Filesystem installed..." || echo -e "Error: filesystem not installed! \nRequires mkdosfs, get it here: http://www1.mager.org/mkdosfs/mkdosfs.zip";;
+				ext2	) ${answer_yes_cmd} | ${linux_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing e2fsprogs http://e2fsprogs.sourceforge.net";;
+				ext3	) ${answer_yes_cmd} | ${linux_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing e2fsprogs http://e2fsprogs.sourceforge.net";;
+				ext4	) ${answer_yes_cmd} | ${linux_ext4_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing e2fsprogs http://e2fsprogs.sourceforge.net";;
 				swap	) ${linux_swap_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
 				hfs	) ${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing hfsutils from http://www.mars.org/home/rob/proj/hfs/version.html";;
 				ntfs	) ${linux_ntfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mkntfs, try installing ntfsprogs from www.linux-ntfs.org";;
