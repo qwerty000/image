@@ -437,7 +437,7 @@ fi
 
 # NetBSD Variables
 if [ $uname = "NetBSD" ]; then
-vnd=`sysctl hw | grep vnd | tr , " " | awk '{ print $NF }' | tr -d [a-z]`
+vnd=`sysctl hw | grep vnd | tr , " " | awk '{ print $NF }' | tr -d [a-z] | uniq`
 fi
 if [ !-e $vnd 2> /dev/null ]; then
 	vn1=vnd0
