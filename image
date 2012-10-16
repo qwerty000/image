@@ -200,6 +200,7 @@ function dd_func
 			else
 				if [ $uname = "NetBSD" ]; then
 					${dd_cmd_sparse1} 2> /dev/null | ${dd_cmd_sparse2} 2> /dev/null
+					echo
 				else
 					${dd_cmd_sparse}
 				fi
@@ -218,6 +219,7 @@ function dd_func
 				# If instead you are on NetBSD you will automatically use progress(1) to get a nice progress bar when creating image files:
 				if [ $uname = "NetBSD" ]; then
 					${dd_cmd1} 2> /dev/null | ${dd_cmd2} 2> /dev/null
+					echo
 				else
 					# No progress bar for you, sorry :(
 					${dd_cmd}
