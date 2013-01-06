@@ -82,7 +82,7 @@ case $( uname ) in
 			This is a program to create custom image files.
 			Options:
 			-h, --help	Display this help message and exit.
-			-i  initialize	install an fs [ 43bsd | dos | ext2 | ext3 | ffs | hfs | lfs | ntfs | ufs ]
+			-i  initialize	install an fs [ 43bsd | dos | ext2 | ext3 | ext4 | ffs | hfs | lfs | ntfs | ufs ]
 			-n  name	name of the image
 			-s  size	size of the image
 			-S  sparse	size of the sparse image
@@ -260,6 +260,7 @@ function new_fs
 	netbsd_dos_cmd3="vnconfig -u $vn1"
 	netbsd_ext2_cmd="mke2fs -F $dd_name"
 	netbsd_ext3_cmd="mke2fs -Fj $dd_name"
+	netbsd_ext3_cmd="mke2fs -Fj -t ext4 $dd_name"
 	netbsd_ffs_cmd="newfs -F $dd_name"
 	netbsd_lfs_cmd1="vnconfig -v $vn1 $dd_name"
 	netbsd_lfs_cmd2="newfs_lfs /dev/${vn1}a"
@@ -332,6 +333,7 @@ case $( uname ) in
 						${netbsd_dos_cmd3} && echo -e "Pseudo disk device detached!" || echo -e "Error: disk device not detached!";;
 				ext2	) ${netbsd_ext2_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
 				ext3	) ${netbsd_ext3_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
+				ext4	) ${netbsd_ext4_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires mke2fs, try installing the /usr/pkgsrc/sysutils/e2fsprogs port";;
 				ffs	) ${netbsd_ffs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed!";;
 				hfs	) ${all_hfs_cmd} && echo -e "Filesystem installed." || echo -e "Error: filesystem not installed! \nRequires hformat, try installing the /usr/pkgsrc/sysutils/hfsutils port";;
 				lfs	) ${netbsd_lfs_cmd1} && echo -e "Disk device attached..." || echo -e "Error: disk device not attached!"
