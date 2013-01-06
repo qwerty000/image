@@ -260,7 +260,7 @@ function new_fs
 	netbsd_dos_cmd3="vnconfig -u $vn1"
 	netbsd_ext2_cmd="mke2fs -F $dd_name"
 	netbsd_ext3_cmd="mke2fs -Fj $dd_name"
-	netbsd_ext3_cmd="mke2fs -Fj -t ext4 $dd_name"
+	netbsd_ext4_cmd="mke2fs -Fj -t ext4 $dd_name"
 	netbsd_ffs_cmd="newfs -F $dd_name"
 	netbsd_lfs_cmd1="vnconfig -v $vn1 $dd_name"
 	netbsd_lfs_cmd2="newfs_lfs /dev/${vn1}a"
